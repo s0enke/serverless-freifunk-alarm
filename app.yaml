@@ -22,12 +22,17 @@ Resources:
 
           def handler(event, context):
             api_result = json.loads(urllib2.urlopen("https://api.freifunk.net/data/freifunk-karte-data.json").read())
-            found_access_point = [access_point for access_point in api_result["allTheRouters"] if access_point["name"] == "${AccessPointName}"]
+            found_access_points = [access_point for access_point in api_result["allTheRouters"] if access_point["name"] == "${AccessPointName}"]
 
-            if len(found_access_point) != 1:
+            if len(found_access_points) != 1:
               raise "Did not find an Access Point with the given name"
 
-            status = found_access_point[0]["status"]
+            found_access_point = found_access_points[0]
+
+            # todo: implement other freifunk communities
+            local_api_result = json.loads(urllib2.urlopen("https://map.hamburg.freifunk.net/nodes.json").read())
+            access_point_is_online = local_api_result["nodes"][found_access_point["id"]]["flags"]["online"]
+
             cw.put_metric_data(
               Namespace="FreifunkAccessPoint",
               MetricData=[{
@@ -36,7 +41,7 @@ Resources:
                   "Name": "AccessPointName",
                   "Value": "${AccessPointName}"
                 }],
-                "Value": 1 if status == "online" else 0
+                "Value": 1 if access_point_is_online else 0
               }]
             )
 
@@ -47,6 +52,7 @@ Resources:
           - Arn
       Runtime: python2.7
       Timeout: 300
+      MemorySize: 256
   CheckProgramRole:
     Type: AWS::IAM::Role
     Properties:
