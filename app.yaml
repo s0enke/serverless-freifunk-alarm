@@ -5,6 +5,9 @@ Parameters:
     Type: String
   NotificationEmail:
     Type: String
+  CheckRateMinutes:
+    Type: Number
+    Default: 5
 Resources:
   CheckProgram:
     Type: AWS::Lambda::Function
@@ -65,3 +68,11 @@ Resources:
                 Action:
                   - cloudwatch:PutMetricData
                 Resource: "*"
+  CheckProgramTrigger:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: !Sub rate(${CheckRateMinutes} minutes)
+      Targets:
+        - Arn:
+            !GetAtt [CheckProgram, Arn]
+          Id: InvokeLambda
