@@ -13,11 +13,29 @@ Resources:
         ZipFile: !Sub |
           import json
           import urllib2
+          import boto3
+
+          cw = boto3.client('cloudwatch')
 
           def handler(event, context):
             api_result = json.loads(urllib2.urlopen("https://api.freifunk.net/data/freifunk-karte-data.json").read())
             found_access_point = [access_point for access_point in api_result["allTheRouters"] if access_point["name"] == "${AccessPointName}"]
-            print(found_access_point)
+
+            if len(found_access_point) != 1:
+              raise "Did not find an Access Point with the given name"
+
+            status = found_access_point[0]["status"]
+            cw.put_metric_data(
+              Namespace="FreifunkAccessPoint",
+              MetricData=[{
+                "MetricName": "online",
+                "Dimensions": [{
+                  "Name": "AccessPointName",
+                  "Value": "${AccessPointName}"
+                }],
+                "Value": 1 if status == "online" else 0
+              }]
+            )
 
       Handler: index.handler
       Role:
@@ -38,3 +56,12 @@ Resources:
           Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: WriteCustomMetric
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
