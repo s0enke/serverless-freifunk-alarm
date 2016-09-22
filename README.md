@@ -5,7 +5,7 @@ A fully codified and one-click CloudFormation template to create a monitor for y
 ## Features / How it works
 
  - Regularly polls the Freifunk API for the Access Point status via CloudWatch Events
- - ends metric to a custom CloudWatch metric
+ - Sends status to a custom CloudWatch metric
  - An CloudWatch Alarm notifies you via SNS/E-mail
 
 ## How to use it
