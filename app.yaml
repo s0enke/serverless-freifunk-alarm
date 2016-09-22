@@ -82,3 +82,26 @@ Resources:
         - Arn:
             !GetAtt [CheckProgram, Arn]
           Id: InvokeLambda
+  AccessPointOfflineAlertTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+  AccessPointOfflineAlert:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmActions:
+        - !Ref AccessPointOfflineAlertTopic
+      OKActions:
+        - !Ref AccessPointOfflineAlertTopic
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: AccessPointName
+          Value: !Ref AccessPointName
+      EvaluationPeriods: 1
+      MetricName: online
+      Namespace: FreifunkAccessPoint
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
