@@ -95,6 +95,8 @@ Resources:
         - !Ref AccessPointOfflineAlertTopic
       OKActions:
         - !Ref AccessPointOfflineAlertTopic
+      InsufficientDataActions:
+        - !Ref AccessPointOfflineAlertTopic
       ComparisonOperator: LessThanThreshold
       Dimensions:
         - Name: AccessPointName
