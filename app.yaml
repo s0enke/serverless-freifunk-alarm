@@ -82,6 +82,13 @@ Resources:
         - Arn:
             !GetAtt [CheckProgram, Arn]
           Id: InvokeLambda
+  CheckProgramTriggerInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt CheckProgram.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt CheckProgramTrigger.Arn
   AccessPointOfflineAlertTopic:
     Type: "AWS::SNS::Topic"
     Properties:
